@@ -104,3 +104,50 @@ pub fn parse_main_header(input: &[u8]) -> IResult<&[u8], AsepriteHeader> {
         },
     ))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_parse_main_header_success() -> Result<(), String> {
+        let mut mock_header = [0u8; 128];
+        mock_header[0..4].copy_from_slice(&[0x00, 0x01, 0x00, 0x00]);
+        mock_header[4..6].copy_from_slice(&[0xE0, 0xA5]);
+        mock_header[6..8].copy_from_slice(&[0x0C, 0x00]);
+        mock_header[8..10].copy_from_slice(&[0x20, 0x00]);
+        mock_header[10..12].copy_from_slice(&[0x20, 0x00]);
+        mock_header[12..14].copy_from_slice(&[0x20, 0x00]);
+        mock_header[14..18].copy_from_slice(&[0x01, 0x00, 0x00, 0x00]);
+        mock_header[18..20].copy_from_slice(&[0x64, 0x00]);
+        mock_header[28] = 0x00;
+        mock_header[32..34].copy_from_slice(&[0x00, 0x01]);
+        mock_header[34] = 0x01;
+        mock_header[35] = 0x01;
+        mock_header[36..38].copy_from_slice(&[0x00, 0x00]);
+        mock_header[38..40].copy_from_slice(&[0x00, 0x00]);
+        mock_header[40..42].copy_from_slice(&[0x10, 0x00]);
+        mock_header[42..44].copy_from_slice(&[0x10, 0x00]);
+
+        let (remaining_bytes, header) =
+            parse_main_header(&mock_header).map_err(|e| format!("Parsing failed: {:?}", e))?;
+
+        assert_eq!(remaining_bytes.len(), 0);
+
+        assert_eq!(header.file_size, 256);
+        assert_eq!(header.magic_number, 0xA5E0);
+        assert_eq!(header.frames, 12);
+        assert_eq!(header.width, 32);
+        assert_eq!(header.height, 32);
+        assert_eq!(header.color_depth, 32);
+        assert_eq!(header.flags, 1);
+        assert_eq!(header.speed, 100);
+        assert_eq!(header.number_of_colors, 256);
+        assert_eq!(header.pixel_width, 1);
+        assert_eq!(header.pixel_height, 1);
+        assert_eq!(header.grid_width, 16);
+        assert_eq!(header.grid_height, 16);
+
+        Ok(())
+    }
+}
