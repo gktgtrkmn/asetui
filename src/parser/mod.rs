@@ -60,3 +60,47 @@ pub struct AsepriteHeader {
     pub grid_width: WORD,
     pub grid_height: WORD,
 }
+
+pub fn parse_main_header(input: &[u8]) -> IResult<&[u8], AsepriteHeader> {
+    let (input, file_size) = parse_dword(input)?;
+    let (input, magic_number) = parse_word(input)?;
+    let (input, frames) = parse_word(input)?;
+    let (input, width) = parse_word(input)?;
+    let (input, height) = parse_word(input)?;
+    let (input, color_depth) = parse_word(input)?;
+    let (input, flags) = parse_dword(input)?;
+    let (input, speed) = parse_word(input)?;
+    let (input, _) = skip_bytes(input, 8)?; // two deprecated dwords (8 bytes), set to zero in doc
+    let (input, transparent_index) = parse_byte(input)?;
+    let (input, _) = skip_bytes(input, 3)?; // ignore next 3 bytes
+    let (input, number_of_colors) = parse_word(input)?;
+    let (input, pixel_width) = parse_byte(input)?;
+    let (input, pixel_height) = parse_byte(input)?;
+    let (input, grid_x) = parse_short(input)?;
+    let (input, grid_y) = parse_short(input)?;
+    let (input, grid_width) = parse_word(input)?;
+    let (input, grid_height) = parse_word(input)?;
+    let (input, _) = skip_bytes(input, 84)?; // 84 bytes reserved for future, skip
+
+    Ok((
+        input,
+        AsepriteHeader {
+            file_size,
+            magic_number,
+            frames,
+            width,
+            height,
+            color_depth,
+            flags,
+            speed,
+            transparent_index,
+            number_of_colors,
+            pixel_width,
+            pixel_height,
+            grid_x,
+            grid_y,
+            grid_width,
+            grid_height,
+        },
+    ))
+}
