@@ -41,7 +41,7 @@ pub fn skip_bytes(input: &[u8], count: usize) -> IResult<&[u8], ()> {
     Ok((input, ()))
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct AsepriteHeader {
     pub file_size: DWORD,
     pub magic_number: WORD, // must be 0xA5E0
@@ -59,6 +59,29 @@ pub struct AsepriteHeader {
     pub grid_y: SHORT,
     pub grid_width: WORD,
     pub grid_height: WORD,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct AsepriteFrameHeader {
+    pub bytes_in_frame: DWORD,
+    pub magic_number: WORD,
+    pub number_of_chunks_old: WORD, // if 0xFFFF, use the new field
+    pub frame_duration: WORD,       // in milliseconds
+    // BYTE[2] for future (skip, set to zero)
+    pub number_of_chunks_new: DWORD,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Chunk<'a> {
+    pub chunk_size: DWORD,
+    pub chunk_type: WORD,
+    pub chunk_data: &'a [BYTE],
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Frame<'a> {
+    pub header: AsepriteFrameHeader,
+    pub chunks: Vec<Chunk<'a>>,
 }
 
 pub fn parse_main_header(input: &[u8]) -> IResult<&[u8], AsepriteHeader> {
