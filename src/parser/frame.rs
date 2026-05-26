@@ -1,6 +1,6 @@
 use nom::IResult;
 
-use crate::parser::chunk::Chunk;
+use crate::parser::chunk::AsepriteChunk;
 use crate::parser::{parse_dword, parse_magic_word, parse_word, skip_bytes};
 use crate::parser::primitives::{DWORD, WORD};
 
@@ -17,7 +17,7 @@ pub struct AsepriteFrameHeader {
 #[derive(Debug, PartialEq)]
 pub struct Frame<'a> {
     pub header: AsepriteFrameHeader,
-    pub chunks: Vec<Chunk<'a>>,
+    pub chunks: Vec<AsepriteChunk<'a>>,
 }
 
 pub fn parse_aseprite_frame_header(input: &[u8]) -> IResult<&[u8], AsepriteFrameHeader> {
