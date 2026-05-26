@@ -1,4 +1,8 @@
+use nom::IResult;
+use nom::combinator::verify;
+
 use crate::parser::chunk::Chunk;
+use crate::parser::{parse_dword, parse_word, skip_bytes};
 use crate::parser::primitives::{DWORD, WORD};
 
 #[derive(Debug, PartialEq)]
@@ -15,4 +19,23 @@ pub struct AsepriteFrameHeader {
 pub struct Frame<'a> {
     pub header: AsepriteFrameHeader,
     pub chunks: Vec<Chunk<'a>>,
+}
+
+pub fn parse_aseprite_frame_header(input: &[u8]) -> IResult<&[u8], AsepriteFrameHeader> {
+    let (input, bytes_in_frame) = parse_dword(input)?;
+    let (input, magic_number) = parse_word(input)?; // always 0xF1FA
+    let (input, number_of_chunks_old) = parse_word(input)?;
+    let (input, frame_duration) = parse_word(input)?;
+    let (input, _) = skip_bytes(input, 2)?;
+    let (input, number_of_chunks_new) = parse_dword(input)?;
+    Ok((
+        input,
+        AsepriteFrameHeader {
+            bytes_in_frame,
+            magic_number,
+            number_of_chunks_old,
+            frame_duration,
+            number_of_chunks_new
+        }
+    ))
 }
