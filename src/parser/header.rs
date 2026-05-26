@@ -1,7 +1,8 @@
 use nom::IResult;
 
 use crate::parser::primitives::{
-    BYTE, DWORD, SHORT, WORD, parse_byte, parse_dword, parse_short, parse_word, skip_bytes,
+    BYTE, DWORD, SHORT, WORD, parse_byte, parse_dword, parse_magic_word, parse_short, parse_word,
+    skip_bytes,
 };
 
 #[derive(Debug, PartialEq)]
@@ -26,7 +27,7 @@ pub struct AsepriteHeader {
 
 pub fn parse_aseprite_header(input: &[u8]) -> IResult<&[u8], AsepriteHeader> {
     let (input, file_size) = parse_dword(input)?;
-    let (input, magic_number) = parse_word(input)?;
+    let (input, magic_number) = parse_magic_word::<0xA5E0>(input)?;
     let (input, frames) = parse_word(input)?;
     let (input, width) = parse_word(input)?;
     let (input, height) = parse_word(input)?;

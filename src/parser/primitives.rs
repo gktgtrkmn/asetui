@@ -1,6 +1,7 @@
 use nom::{
-    IResult,
+    IResult, Parser,
     bytes::complete::take,
+    combinator::verify,
     number::complete::{le_i16, le_i32, le_u8, le_u16, le_u32},
 };
 
@@ -39,4 +40,9 @@ pub fn parse_long(input: &[u8]) -> IResult<&[u8], LONG> {
 pub fn skip_bytes(input: &[u8], count: usize) -> IResult<&[u8], ()> {
     let (input, _) = take(count)(input)?;
     Ok((input, ()))
+}
+
+#[inline]
+pub fn parse_magic_word<const MAGIC: WORD>(input: &[u8]) -> IResult<&[u8], WORD> {
+    verify(parse_word, |&m| m == MAGIC).parse(input)
 }
