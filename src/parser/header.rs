@@ -24,7 +24,7 @@ pub struct AsepriteHeader {
     pub grid_height: WORD,
 }
 
-pub fn parse_main_header(input: &[u8]) -> IResult<&[u8], AsepriteHeader> {
+pub fn parse_aseprite_header(input: &[u8]) -> IResult<&[u8], AsepriteHeader> {
     let (input, file_size) = parse_dword(input)?;
     let (input, magic_number) = parse_word(input)?;
     let (input, frames) = parse_word(input)?;
@@ -93,7 +93,7 @@ mod tests {
         mock_header[42..44].copy_from_slice(&[0x10, 0x00]);
 
         let (remaining_bytes, header) =
-            parse_main_header(&mock_header).map_err(|e| format!("Parsing failed: {:?}", e))?;
+            parse_aseprite_header(&mock_header).map_err(|e| format!("Parsing failed: {:?}", e))?;
 
         assert_eq!(remaining_bytes.len(), 0);
 
