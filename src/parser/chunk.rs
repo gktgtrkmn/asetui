@@ -249,18 +249,28 @@ pub struct TilesetChunk<'a> {
 pub struct AsepriteChunk<'a> {
     pub chunk_size: DWORD,
     pub chunk_type: WORD,
-    pub raw: &'a [u8]
+    pub raw: &'a [u8],
 }
 
 pub fn parse_aseprite_chunk(input: &[u8]) -> IResult<&[u8], AsepriteChunk<'_>> {
     let (input, chunk_size) = parse_dword(input)?;
     let (input, chunk_type) = parse_word(input)?;
     if chunk_size < 6 {
-        return Err(nom::Err::Error(nom::error::Error::new(input, nom::error::ErrorKind::Verify)));
+        return Err(nom::Err::Error(nom::error::Error::new(
+            input,
+            nom::error::ErrorKind::Verify,
+        )));
     }
     let body_len: usize = (chunk_size - 6) as usize;
     let (input, raw) = take(body_len)(input)?;
-    Ok((input, AsepriteChunk { chunk_size, chunk_type, raw }))
+    Ok((
+        input,
+        AsepriteChunk {
+            chunk_size,
+            chunk_type,
+            raw,
+        },
+    ))
 }
 
 impl<'a> AsepriteChunk<'a> {
@@ -297,7 +307,11 @@ fn parse_old_palette_color(input: &[u8]) -> IResult<&[u8], OldPaletteColor> {
 fn parse_old_palette_packet(input: &[u8]) -> IResult<&[u8], OldPalettePacket> {
     let (input, skip) = parse_byte(input)?;
     let (input, count_byte) = parse_byte(input)?;
-    let actual = if count_byte == 0 { 256 } else { count_byte as usize };
+    let actual = if count_byte == 0 {
+        256
+    } else {
+        count_byte as usize
+    };
     let (input, colors) = count(parse_old_palette_color, actual).parse(input)?;
     Ok((
         input,
@@ -512,7 +526,8 @@ impl<'a> AsepriteChunkParser<'a> for ExternalFilesChunk {
     fn parse_data(input: &'a [u8]) -> IResult<&'a [u8], Self> {
         let (input, num_entries) = parse_dword(input)?;
         let (input, _) = skip_bytes(input, 8)?;
-        let (input, entries) = count(parse_external_file_entry, num_entries as usize).parse(input)?;
+        let (input, entries) =
+            count(parse_external_file_entry, num_entries as usize).parse(input)?;
         Ok((input, ExternalFilesChunk { entries }))
     }
 }
@@ -527,7 +542,7 @@ impl<'a> AsepriteChunkParser<'a> for MaskChunk<'a> {
         let (input, height) = parse_word(input)?;
         let (input, _) = skip_bytes(input, 8)?;
         let (input, name) = parse_string(input)?;
-        let bitmap_size = (height as usize) * (((width as usize) + 7) / 8);
+        let bitmap_size = (height as usize) * (((width as usize) + 7).div_ceil(8));
         let (input, bitmap) = take(bitmap_size)(input)?;
         Ok((
             input,
