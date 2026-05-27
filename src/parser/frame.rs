@@ -1,8 +1,8 @@
 use nom::IResult;
 
 use crate::parser::chunk::AsepriteChunk;
-use crate::parser::{parse_dword, parse_magic_word, parse_word, skip_bytes};
 use crate::parser::primitives::{DWORD, WORD};
+use crate::parser::{parse_dword, parse_magic_word, parse_word, skip_bytes};
 
 #[derive(Debug, PartialEq)]
 pub struct AsepriteFrameHeader {
@@ -34,7 +34,7 @@ pub fn parse_aseprite_frame_header(input: &[u8]) -> IResult<&[u8], AsepriteFrame
             magic_number,
             number_of_chunks_old,
             frame_duration,
-            number_of_chunks_new
-        }
+            number_of_chunks_new,
+        },
     ))
 }
