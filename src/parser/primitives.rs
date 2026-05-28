@@ -15,6 +15,24 @@ pub type LONG64 = i64;
 pub type QWORD = u64;
 pub type UUID = [u8; 16];
 
+#[derive(Debug, PartialEq)]
+pub struct Point {
+    pub x: LONG,
+    pub y: LONG,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Size {
+    pub w: LONG,
+    pub h: LONG,
+}
+
+#[derive(Debug, PartialEq)]
+pub struct Rect {
+    pub origin: Point,
+    pub size: Size,
+}
+
 #[inline]
 pub fn parse_byte(input: &[u8]) -> IResult<&[u8], BYTE> {
     le_u8(input)
@@ -71,6 +89,24 @@ pub fn parse_uuid(input: &[u8]) -> IResult<&[u8], UUID> {
     let mut uuid = [0u8; 16];
     uuid.copy_from_slice(bytes);
     Ok((input, uuid))
+}
+
+pub fn parse_point(input: &[u8]) -> IResult<&[u8], Point> {
+    let (input, x) = parse_long(input)?;
+    let (input, y) = parse_long(input)?;
+    Ok((input, Point { x, y }))
+}
+
+pub fn parse_size(input: &[u8]) -> IResult<&[u8], Size> {
+    let (input, w) = parse_long(input)?;
+    let (input, h) = parse_long(input)?;
+    Ok((input, Size { w, h }))
+}
+
+pub fn parse_rect(input: &[u8]) -> IResult<&[u8], Rect> {
+    let (input, origin) = parse_point(input)?;
+    let (input, size) = parse_size(input)?;
+    Ok((input, Rect { origin, size }))
 }
 
 pub fn parse_string(input: &[u8]) -> IResult<&[u8], String> {
