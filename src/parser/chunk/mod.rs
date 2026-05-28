@@ -109,8 +109,5 @@ impl CtxNeed for WithCtx {
 pub trait AsepriteChunkParser<'a>: Sized {
     const CHUNK_TYPE: WORD;
     type Need: CtxNeed;
-    fn parse_data(
-        input: &'a [u8],
-        arg: <Self::Need as CtxNeed>::Arg,
-    ) -> IResult<&'a [u8], Self>;
+    fn parse_data(input: &'a [u8], arg: <Self::Need as CtxNeed>::Arg) -> IResult<&'a [u8], Self>;
 }

@@ -1,6 +1,8 @@
 use nom::IResult;
+use nom::Parser;
+use nom::multi::count;
 
-use crate::parser::chunk::AsepriteChunk;
+use crate::parser::chunk::{AsepriteChunk, parse_aseprite_chunk};
 use crate::parser::primitives::{DWORD, WORD};
 use crate::parser::{parse_dword, parse_magic_word, parse_word, skip_bytes};
 
@@ -37,4 +39,15 @@ pub fn parse_aseprite_frame_header(input: &[u8]) -> IResult<&[u8], AsepriteFrame
             number_of_chunks_new,
         },
     ))
+}
+
+pub fn parse_aseprite_frame(input: &[u8]) -> IResult<&[u8], Frame<'_>> {
+    let (input, header) = parse_aseprite_frame_header(input)?;
+    let chunk_count: usize = if header.number_of_chunks_old == 0xFFFF {
+        header.number_of_chunks_new as usize
+    } else {
+        header.number_of_chunks_old as usize
+    };
+    let (input, chunks) = count(parse_aseprite_chunk, chunk_count).parse(input)?;
+    Ok((input, Frame { header, chunks }))
 }
