@@ -87,10 +87,7 @@ pub fn parse_double(input: &[u8]) -> IResult<&[u8], f64> {
 pub fn parse_uuid(input: &[u8]) -> IResult<&[u8], Uuid> {
     let (input, bytes) = take(16usize)(input)?;
     let uuid = Uuid::from_slice(bytes).map_err(|_| {
-        nom::Err::Failure(nom::error::Error::new(
-            bytes,
-            nom::error::ErrorKind::Verify,
-        ))
+        nom::Err::Failure(nom::error::Error::new(bytes, nom::error::ErrorKind::Verify))
     })?;
     Ok((input, uuid))
 }
