@@ -1,7 +1,8 @@
 use nom::IResult;
+use uuid::Uuid;
 
 use crate::parser::chunk::AsepriteChunkParser;
-use crate::parser::primitives::{UUID, parse_string, parse_uuid};
+use crate::parser::primitives::{parse_string, parse_uuid};
 use crate::parser::{BYTE, DWORD, WORD, parse_byte, parse_dword, parse_word, skip_bytes};
 
 #[derive(Debug, PartialEq)]
@@ -15,7 +16,7 @@ pub struct LayerChunk {
     pub opacity: BYTE,
     pub name: String,
     pub tileset_index: Option<DWORD>,
-    pub uuid: Option<UUID>,
+    pub uuid: Option<Uuid>,
 }
 
 impl<'a> AsepriteChunkParser<'a> for LayerChunk {

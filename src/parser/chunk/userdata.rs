@@ -1,11 +1,12 @@
 use nom::{IResult, Parser, error::ErrorKind, multi::count};
+use uuid::Uuid;
 
 use crate::parser::{
     BYTE, DWORD, LONG, SHORT, WORD,
     chunk::AsepriteChunkParser,
     parse_byte, parse_dword, parse_long, parse_short, parse_word,
     primitives::{
-        FIXED, LONG64, Point, QWORD, Rect, Size, UUID, parse_double, parse_float, parse_long64,
+        FIXED, LONG64, Point, QWORD, Rect, Size, parse_double, parse_float, parse_long64,
         parse_point, parse_qword, parse_rect, parse_size, parse_string, parse_uuid,
     },
 };
@@ -37,7 +38,7 @@ pub enum PropValue {
     Rect(Rect),
     Vector(Vec<PropValue>),
     Map(Vec<(String, PropValue)>),
-    Uuid(UUID),
+    Uuid(Uuid),
 }
 
 #[derive(Debug, PartialEq)]

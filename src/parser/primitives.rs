@@ -4,6 +4,7 @@ use nom::{
     combinator::verify,
     number::complete::{le_f32, le_f64, le_i16, le_i32, le_i64, le_u8, le_u16, le_u32, le_u64},
 };
+use uuid::Uuid;
 
 pub type BYTE = u8;
 pub type WORD = u16;
@@ -13,7 +14,6 @@ pub type LONG = i32;
 pub type FIXED = i32;
 pub type LONG64 = i64;
 pub type QWORD = u64;
-pub type UUID = [u8; 16];
 
 #[derive(Debug, PartialEq)]
 pub struct Point {
@@ -84,10 +84,14 @@ pub fn parse_double(input: &[u8]) -> IResult<&[u8], f64> {
     le_f64(input)
 }
 
-pub fn parse_uuid(input: &[u8]) -> IResult<&[u8], UUID> {
+pub fn parse_uuid(input: &[u8]) -> IResult<&[u8], Uuid> {
     let (input, bytes) = take(16usize)(input)?;
-    let mut uuid = [0u8; 16];
-    uuid.copy_from_slice(bytes);
+    let uuid = Uuid::from_slice(bytes).map_err(|_| {
+        nom::Err::Failure(nom::error::Error::new(
+            bytes,
+            nom::error::ErrorKind::Verify,
+        ))
+    })?;
     Ok((input, uuid))
 }
 
