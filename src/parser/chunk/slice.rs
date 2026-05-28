@@ -2,7 +2,7 @@ use nom::{IResult, Parser, multi::count};
 
 use crate::parser::{
     DWORD, LONG, WORD,
-    chunk::AsepriteChunkParser,
+    chunk::{AsepriteChunkParser, NoCtx},
     parse_dword, parse_long,
     primitives::{Point, Rect, Size, parse_point, parse_string},
 };
@@ -76,8 +76,9 @@ fn parse_slice_key(
 
 impl<'a> AsepriteChunkParser<'a> for SliceChunk {
     const CHUNK_TYPE: WORD = 0x2022;
+    type Need = NoCtx;
 
-    fn parse_data(input: &'a [u8]) -> IResult<&'a [u8], Self> {
+    fn parse_data(input: &'a [u8], _: ()) -> IResult<&'a [u8], Self> {
         let (input, num_keys) = parse_dword(input)?;
         let (input, flags) = parse_dword(input)?;
         let (input, _reserved) = parse_dword(input)?;

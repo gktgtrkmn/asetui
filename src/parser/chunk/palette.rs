@@ -1,8 +1,11 @@
 use nom::{IResult, Parser, multi::count};
 
 use crate::parser::{
-    BYTE, DWORD, WORD, chunk::AsepriteChunkParser, parse_byte, parse_dword, parse_word,
-    primitives::parse_string, skip_bytes,
+    BYTE, DWORD, WORD,
+    chunk::{AsepriteChunkParser, NoCtx},
+    parse_byte, parse_dword, parse_word,
+    primitives::parse_string,
+    skip_bytes,
 };
 
 #[derive(Debug, PartialEq)]
@@ -50,8 +53,9 @@ fn parse_palette_entry(input: &[u8]) -> IResult<&[u8], PaletteEntry> {
 
 impl<'a> AsepriteChunkParser<'a> for PaletteChunk {
     const CHUNK_TYPE: WORD = 0x2019;
+    type Need = NoCtx;
 
-    fn parse_data(input: &'a [u8]) -> IResult<&'a [u8], Self> {
+    fn parse_data(input: &'a [u8], _: ()) -> IResult<&'a [u8], Self> {
         let (input, new_size) = parse_dword(input)?;
         let (input, first_index) = parse_dword(input)?;
         let (input, last_index) = parse_dword(input)?;

@@ -17,6 +17,11 @@ use nom::error::ErrorKind;
 
 use crate::parser::primitives::{DWORD, WORD, parse_dword, parse_word};
 
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct ParseContext {
+    pub layers_have_uuid: bool,
+}
+
 #[derive(Debug, PartialEq)]
 pub struct AsepriteChunk<'a> {
     pub chunk_size: DWORD,
@@ -46,14 +51,31 @@ pub fn parse_aseprite_chunk(input: &[u8]) -> IResult<&[u8], AsepriteChunk<'_>> {
 }
 
 impl<'a> AsepriteChunk<'a> {
-    pub fn parse_as<T: AsepriteChunkParser<'a>>(&self) -> IResult<&'a [u8], T> {
+    pub fn parse_as<T>(&self) -> IResult<&'a [u8], T>
+    where
+        T: AsepriteChunkParser<'a, Need = NoCtx>,
+    {
+        self.dispatch::<T>(())
+    }
+
+    pub fn parse_as_ctx<T>(&self, ctx: ParseContext) -> IResult<&'a [u8], T>
+    where
+        T: AsepriteChunkParser<'a, Need = WithCtx>,
+    {
+        self.dispatch::<T>(ctx)
+    }
+
+    fn dispatch<T: AsepriteChunkParser<'a>>(
+        &self,
+        arg: <T::Need as CtxNeed>::Arg,
+    ) -> IResult<&'a [u8], T> {
         if self.chunk_type != T::CHUNK_TYPE {
             return Err(nom::Err::Error(nom::error::Error::new(
                 self.raw,
                 ErrorKind::Verify,
             )));
         }
-        let (rest, value) = T::parse_data(self.raw)?;
+        let (rest, value) = T::parse_data(self.raw, arg)?;
         if !rest.is_empty() {
             return Err(nom::Err::Error(nom::error::Error::new(
                 rest,
@@ -64,7 +86,31 @@ impl<'a> AsepriteChunk<'a> {
     }
 }
 
+mod sealed {
+    pub trait Sealed {}
+}
+
+pub trait CtxNeed: sealed::Sealed {
+    type Arg;
+}
+
+pub struct NoCtx;
+pub struct WithCtx;
+
+impl sealed::Sealed for NoCtx {}
+impl sealed::Sealed for WithCtx {}
+impl CtxNeed for NoCtx {
+    type Arg = ();
+}
+impl CtxNeed for WithCtx {
+    type Arg = ParseContext;
+}
+
 pub trait AsepriteChunkParser<'a>: Sized {
     const CHUNK_TYPE: WORD;
-    fn parse_data(input: &'a [u8]) -> IResult<&'a [u8], Self>;
+    type Need: CtxNeed;
+    fn parse_data(
+        input: &'a [u8],
+        arg: <Self::Need as CtxNeed>::Arg,
+    ) -> IResult<&'a [u8], Self>;
 }

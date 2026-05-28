@@ -1,7 +1,10 @@
 use nom::{IResult, bytes::complete::take};
 
 use crate::parser::{
-    WORD, chunk::AsepriteChunkParser, parse_dword, parse_long, parse_word, primitives::FIXED,
+    WORD,
+    chunk::{AsepriteChunkParser, NoCtx},
+    parse_dword, parse_long, parse_word,
+    primitives::FIXED,
     skip_bytes,
 };
 
@@ -15,8 +18,9 @@ pub struct ColorProfileChunk<'a> {
 
 impl<'a> AsepriteChunkParser<'a> for ColorProfileChunk<'a> {
     const CHUNK_TYPE: WORD = 0x2007;
+    type Need = NoCtx;
 
-    fn parse_data(input: &'a [u8]) -> IResult<&'a [u8], Self> {
+    fn parse_data(input: &'a [u8], _: ()) -> IResult<&'a [u8], Self> {
         let (input, kind) = parse_word(input)?;
         let (input, flags) = parse_word(input)?;
         let (input, gamma) = parse_long(input)?;

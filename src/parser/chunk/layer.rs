@@ -1,7 +1,7 @@
 use nom::IResult;
 use uuid::Uuid;
 
-use crate::parser::chunk::AsepriteChunkParser;
+use crate::parser::chunk::{AsepriteChunkParser, ParseContext, WithCtx};
 use crate::parser::primitives::{parse_string, parse_uuid};
 use crate::parser::{BYTE, DWORD, WORD, parse_byte, parse_dword, parse_word, skip_bytes};
 
@@ -21,8 +21,9 @@ pub struct LayerChunk {
 
 impl<'a> AsepriteChunkParser<'a> for LayerChunk {
     const CHUNK_TYPE: WORD = 0x2004;
+    type Need = WithCtx;
 
-    fn parse_data(input: &'a [u8]) -> IResult<&'a [u8], Self> {
+    fn parse_data(input: &'a [u8], ctx: ParseContext) -> IResult<&'a [u8], Self> {
         let (input, flags) = parse_word(input)?;
         let (input, layer_type) = parse_word(input)?;
         let (input, child_level) = parse_word(input)?;
@@ -38,11 +39,11 @@ impl<'a> AsepriteChunkParser<'a> for LayerChunk {
         } else {
             (input, None)
         };
-        let (input, uuid) = if input.is_empty() {
-            (input, None)
-        } else {
+        let (input, uuid) = if ctx.layers_have_uuid {
             let (i, id) = parse_uuid(input)?;
             (i, Some(id))
+        } else {
+            (input, None)
         };
         Ok((
             input,

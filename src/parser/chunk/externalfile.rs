@@ -1,8 +1,11 @@
 use nom::{IResult, Parser, multi::count};
 
 use crate::parser::{
-    BYTE, DWORD, WORD, chunk::AsepriteChunkParser, parse_byte, parse_dword,
-    primitives::parse_string, skip_bytes,
+    BYTE, DWORD, WORD,
+    chunk::{AsepriteChunkParser, NoCtx},
+    parse_byte, parse_dword,
+    primitives::parse_string,
+    skip_bytes,
 };
 
 #[derive(Debug, PartialEq)]
@@ -27,8 +30,9 @@ fn parse_external_file_entry(input: &[u8]) -> IResult<&[u8], ExternalFileEntry> 
 
 impl<'a> AsepriteChunkParser<'a> for ExternalFilesChunk {
     const CHUNK_TYPE: WORD = 0x2008;
+    type Need = NoCtx;
 
-    fn parse_data(input: &'a [u8]) -> IResult<&'a [u8], Self> {
+    fn parse_data(input: &'a [u8], _: ()) -> IResult<&'a [u8], Self> {
         let (input, num_entries) = parse_dword(input)?;
         let (input, _) = skip_bytes(input, 8)?;
         let (input, entries) =

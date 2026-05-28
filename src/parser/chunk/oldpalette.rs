@@ -1,6 +1,10 @@
 use nom::{IResult, Parser, multi::count};
 
-use crate::parser::{BYTE, WORD, chunk::AsepriteChunkParser, parse_byte, parse_word};
+use crate::parser::{
+    BYTE, WORD,
+    chunk::{AsepriteChunkParser, NoCtx},
+    parse_byte, parse_word,
+};
 
 #[derive(Debug, PartialEq)]
 pub struct OldPaletteColor {
@@ -59,8 +63,9 @@ fn parse_old_palette_packets(input: &[u8]) -> IResult<&[u8], Vec<OldPalettePacke
 
 impl<'a> AsepriteChunkParser<'a> for OldPalette04Chunk {
     const CHUNK_TYPE: WORD = 0x0004;
+    type Need = NoCtx;
 
-    fn parse_data(input: &'a [u8]) -> IResult<&'a [u8], Self> {
+    fn parse_data(input: &'a [u8], _: ()) -> IResult<&'a [u8], Self> {
         let (input, packets) = parse_old_palette_packets(input)?;
         Ok((input, OldPalette04Chunk { packets }))
     }
@@ -68,8 +73,9 @@ impl<'a> AsepriteChunkParser<'a> for OldPalette04Chunk {
 
 impl<'a> AsepriteChunkParser<'a> for OldPalette11Chunk {
     const CHUNK_TYPE: WORD = 0x0011;
+    type Need = NoCtx;
 
-    fn parse_data(input: &'a [u8]) -> IResult<&'a [u8], Self> {
+    fn parse_data(input: &'a [u8], _: ()) -> IResult<&'a [u8], Self> {
         let (input, packets) = parse_old_palette_packets(input)?;
         Ok((input, OldPalette11Chunk { packets }))
     }

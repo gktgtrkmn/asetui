@@ -1,8 +1,11 @@
 use nom::{IResult, bytes::complete::take};
 
 use crate::parser::{
-    DWORD, SHORT, WORD, chunk::AsepriteChunkParser, parse_dword, parse_short, parse_word,
-    primitives::parse_string, skip_bytes,
+    DWORD, SHORT, WORD,
+    chunk::{AsepriteChunkParser, NoCtx},
+    parse_dword, parse_short, parse_word,
+    primitives::parse_string,
+    skip_bytes,
 };
 
 #[derive(Debug, PartialEq)]
@@ -20,8 +23,9 @@ pub struct TilesetChunk<'a> {
 
 impl<'a> AsepriteChunkParser<'a> for TilesetChunk<'a> {
     const CHUNK_TYPE: WORD = 0x2023;
+    type Need = NoCtx;
 
-    fn parse_data(input: &'a [u8]) -> IResult<&'a [u8], Self> {
+    fn parse_data(input: &'a [u8], _: ()) -> IResult<&'a [u8], Self> {
         let (input, id) = parse_dword(input)?;
         let (input, flags) = parse_dword(input)?;
         let (input, num_tiles) = parse_dword(input)?;

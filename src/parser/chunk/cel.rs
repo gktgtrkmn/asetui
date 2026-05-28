@@ -1,8 +1,11 @@
 use nom::{IResult, bytes::complete::take, error::ErrorKind};
 
 use crate::parser::{
-    BYTE, DWORD, SHORT, WORD, chunk::AsepriteChunkParser, parse_byte, parse_dword, parse_long,
-    parse_short, parse_word, primitives::FIXED, skip_bytes,
+    BYTE, DWORD, SHORT, WORD,
+    chunk::{AsepriteChunkParser, NoCtx},
+    parse_byte, parse_dword, parse_long, parse_short, parse_word,
+    primitives::FIXED,
+    skip_bytes,
 };
 
 #[derive(Debug, PartialEq)]
@@ -53,8 +56,9 @@ pub struct CelExtraChunk {
 
 impl<'a> AsepriteChunkParser<'a> for CelChunk<'a> {
     const CHUNK_TYPE: WORD = 0x2005;
+    type Need = NoCtx;
 
-    fn parse_data(input: &'a [u8]) -> IResult<&'a [u8], Self> {
+    fn parse_data(input: &'a [u8], _: ()) -> IResult<&'a [u8], Self> {
         let (input, layer_index) = parse_word(input)?;
         let (input, x) = parse_short(input)?;
         let (input, y) = parse_short(input)?;
@@ -126,8 +130,9 @@ impl<'a> AsepriteChunkParser<'a> for CelChunk<'a> {
 
 impl<'a> AsepriteChunkParser<'a> for CelExtraChunk {
     const CHUNK_TYPE: WORD = 0x2006;
+    type Need = NoCtx;
 
-    fn parse_data(input: &'a [u8]) -> IResult<&'a [u8], Self> {
+    fn parse_data(input: &'a [u8], _: ()) -> IResult<&'a [u8], Self> {
         let (input, flags) = parse_dword(input)?;
         let (input, precise_x) = parse_long(input)?;
         let (input, precise_y) = parse_long(input)?;

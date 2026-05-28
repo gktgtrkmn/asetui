@@ -3,7 +3,7 @@ use uuid::Uuid;
 
 use crate::parser::{
     BYTE, DWORD, LONG, SHORT, WORD,
-    chunk::AsepriteChunkParser,
+    chunk::{AsepriteChunkParser, NoCtx},
     parse_byte, parse_dword, parse_long, parse_short, parse_word,
     primitives::{
         FIXED, LONG64, Point, QWORD, Rect, Size, parse_double, parse_float, parse_long64,
@@ -115,8 +115,9 @@ fn parse_property_map(input: &[u8]) -> IResult<&[u8], PropertiesMap> {
 
 impl<'a> AsepriteChunkParser<'a> for UserDataChunk {
     const CHUNK_TYPE: WORD = 0x2020;
+    type Need = NoCtx;
 
-    fn parse_data(input: &'a [u8]) -> IResult<&'a [u8], Self> {
+    fn parse_data(input: &'a [u8], _: ()) -> IResult<&'a [u8], Self> {
         let (input, flags) = parse_dword(input)?;
         let (input, text) = if flags & 1 != 0 {
             let (i, t) = parse_string(input)?;

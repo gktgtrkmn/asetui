@@ -3,7 +3,9 @@ pub mod frame;
 pub mod header;
 pub mod primitives;
 
-pub use chunk::{AsepriteChunk, parse_aseprite_chunk};
+pub use chunk::{
+    AsepriteChunk, AsepriteChunkParser, CtxNeed, NoCtx, ParseContext, WithCtx, parse_aseprite_chunk,
+};
 pub use frame::{AsepriteFrameHeader, Frame, parse_aseprite_frame_header};
 pub use header::{AsepriteHeader, parse_aseprite_header};
 pub use primitives::{
